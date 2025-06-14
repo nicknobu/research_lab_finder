@@ -1,0 +1,40 @@
+# Research Lab Finder - Python Dependencies
+# Semantic Search Technology Verification Prototype
+
+# OpenAI API
+openai==0.28.1
+
+# Data Processing
+pandas==2.1.4
+numpy==1.24.3
+
+# Machine Learning & Similarity Calculation
+scikit-learn==1.3.2
+
+# Environment Variables Management
+python-dotenv==1.0.0
+
+# HTTP Client for Web Scraping
+aiohttp==3.9.1
+requests==2.31.0
+
+# HTML Parsing for Web Scraping
+beautifulsoup4==4.12.2
+lxml==4.9.3
+
+# Future Web Application Development (Optional)
+fastapi==0.104.1
+uvicorn==0.24.0
+pydantic==2.5.0
+
+# Development & Testing
+pytest==7.4.3
+pytest-asyncio==0.21.1
+
+# Database (Future Use)
+psycopg2-binary==2.9.7
+sqlalchemy==2.0.23
+
+# Utilities
+tqdm==4.66.1
+colorama==0.4.6
