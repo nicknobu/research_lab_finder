@@ -1,161 +1,50 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Search, Users, Brain, Zap } from 'lucide-react'
-
-// 型定義をインライン定義（import エラー回避）
-interface SearchRequest {
-  query: string
-  limit?: number
-  region_filter?: string[]
-  field_filter?: string[]
-  min_similarity?: number
-}
-
-interface SearchResponse {
-  query: string
-  total_results: number
-  search_time_ms: number
-  results: any[]
-}
-
-// API関数をインライン定義（エラーハンドリング強化）
-const searchLabs = async (request: SearchRequest): Promise<SearchResponse> => {
-  const API_BASE_URL = 'http://localhost:8000'
-  
-  try {
-    const response = await fetch(`${API_BASE_URL}/api/search/`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(request),
-    })
-
-    if (!response.ok) {
-      throw new Error(`検索エラー: ${response.status} ${response.statusText}`)
-    }
-
-    const data = await response.json()
-    return data
-  } catch (error) {
-    console.error('API呼び出しエラー:', error)
-    throw error
-  }
-}
+import { Search, TrendingUp, BookOpen, Users, Target } from 'lucide-react'
+import SearchBox from '../components/SearchBox'
+import PopularSearches from '../components/PopularSearches'
+import { searchLabs } from '../utils/api'
+import type { SearchResponse } from '../types'
 
 const Home: React.FC = () => {
-  const [query, setQuery] = useState('')
+  const navigate = useNavigate()
   const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState<string>('')
-  const [searchResults, setSearchResults] = useState<any[]>([])
-  const [hasSearched, setHasSearched] = useState(false)
+  const [error, setError] = useState('')
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    
-    if (!query?.trim()) {
-      setError('検索キーワードを入力してください')
-      return
-    }
-
+  const handleSearch = async (query: string) => {
+    console.log('🔍 検索開始:', query)
     setIsLoading(true)
     setError('')
-    setHasSearched(false)
 
     try {
-      const searchRequest: SearchRequest = {
-        query: query.trim(),
-        limit: 10
-      }
-
-      console.log('検索開始:', searchRequest)
-      const results = await searchLabs(searchRequest)
-      console.log('検索成功:', results)
+      const searchResults: SearchResponse = await searchLabs({
+        query,
+        limit: 20
+      })
       
-      // 安全にresultsを設定
-      if (results && Array.isArray(results.results)) {
-        setSearchResults(results.results)
-      } else {
-        setSearchResults([])
-      }
-      setHasSearched(true)
+      console.log('✅ 検索結果:', searchResults)
       
+      // 検索結果を state で渡して SearchResults ページに遷移
+      navigate('/search', {
+        state: {
+          results: searchResults,
+          query: query
+        }
+      })
     } catch (err) {
-      console.error('検索エラー:', err)
+      console.error('❌ 検索エラー:', err)
       const errorMessage = err instanceof Error ? err.message : '予期しないエラーが発生しました'
       setError(`検索中にエラーが発生しました: ${errorMessage}`)
-      setSearchResults([])
-      setHasSearched(true)
     } finally {
       setIsLoading(false)
     }
   }
 
   const handleExampleSearch = (exampleQuery: string) => {
+    console.log('📌 例題検索:', exampleQuery)
     if (exampleQuery && !isLoading) {
-      setQuery(exampleQuery)
-      setError('')
+      handleSearch(exampleQuery)
     }
-  }
-
-  // 安全なレンダリング関数
-  const renderLabCard = (lab: any, index: number) => {
-    if (!lab) return null
-
-    const {
-      name = '研究室名不明',
-      professor_name = '教授名不明',
-      university_name = '大学名不明',
-      prefecture = '所在地不明',
-      research_theme = '研究テーマ不明',
-      research_content = '研究内容不明',
-      research_field = '分野不明',
-      similarity_score = 0,
-      lab_url
-    } = lab
-
-    return (
-      <div key={index} className="border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow">
-        <div className="flex justify-between items-start mb-3">
-          <h3 className="text-xl font-semibold text-gray-900">{name}</h3>
-          <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
-            {Math.round((similarity_score || 0) * 100)}% マッチ
-          </span>
-        </div>
-        
-        <div className="mb-3">
-          <p className="text-gray-700"><strong>教授:</strong> {professor_name}</p>
-          <p className="text-gray-700"><strong>大学:</strong> {university_name}</p>
-          <p className="text-gray-700"><strong>地域:</strong> {prefecture}</p>
-        </div>
-        
-        <div className="mb-3">
-          <h4 className="font-semibold text-gray-800 mb-1">研究テーマ:</h4>
-          <p className="text-gray-700">{research_theme}</p>
-        </div>
-        
-        <div className="mb-3">
-          <h4 className="font-semibold text-gray-800 mb-1">研究内容:</h4>
-          <p className="text-gray-600 text-sm">{research_content}</p>
-        </div>
-        
-        <div className="flex items-center justify-between">
-          <span className="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm">
-            {research_field}
-          </span>
-          {lab_url && (
-            <a 
-              href={lab_url} 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="text-blue-600 hover:text-blue-800 text-sm font-medium"
-            >
-              研究室サイト →
-            </a>
-          )}
-        </div>
-      </div>
-    )
   }
 
   return (
@@ -167,125 +56,67 @@ const Home: React.FC = () => {
             研究室<span className="text-blue-600">ファインダー</span>
           </h1>
           <p className="text-xl text-gray-600 mb-8">
-            中学生の興味・関心から、全国の大学研究室をAIが推奨
+            AI技術で中学生にぴったりの研究室を見つけよう
           </p>
         </div>
 
-        {/* 検索フォーム */}
-        <div className="bg-white rounded-2xl shadow-lg p-8 mb-8">
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="relative">
-              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-6 w-6 text-gray-400" />
-              <input
-                type="text"
-                value={query}
-                onChange={(e) => {
-                  setQuery(e.target.value)
-                  if (error) setError('')
-                }}
-                placeholder="研究したい分野を入力してください（例：がん治療、AI、環境問題）"
-                className="w-full pl-12 pr-4 py-4 text-lg border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none disabled:bg-gray-100"
-                disabled={isLoading}
-              />
+        {/* 検索ボックス */}
+        <div className="mb-12">
+          <SearchBox 
+            onSearch={handleSearch}
+            placeholder="研究テーマや分野を入力してください（例：機械学習、がん治療、AI）"
+          />
+          
+          {isLoading && (
+            <div className="text-center mt-4">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
+              <p className="text-gray-600">検索中...</p>
             </div>
-            
-            {error && (
-              <div className="text-red-600 text-sm font-medium bg-red-50 p-3 rounded-lg">
-                {error}
-              </div>
-            )}
-            
-            <button
-              type="submit"
-              disabled={isLoading || !query?.trim()}
-              className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white py-4 rounded-xl font-semibold text-lg transition-colors"
-            >
-              {isLoading ? (
-                <div className="flex items-center justify-center">
-                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white mr-2"></div>
-                  検索中...
-                </div>
-              ) : (
-                '研究室を検索'
-              )}
-            </button>
-          </form>
+          )}
 
-          {/* 検索例 */}
-          <div className="mt-6">
-            <p className="text-sm text-gray-600 mb-3">検索例:</p>
-            <div className="flex flex-wrap gap-2">
-              {[
-                'がん治療の研究',
-                '人工知能とロボット',
-                '地球温暖化の解決',
-                '免疫療法',
-                '再生医療'
-              ].map((example) => (
-                <button
-                  key={example}
-                  onClick={() => handleExampleSearch(example)}
-                  className="px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-sm hover:bg-blue-100 transition-colors disabled:opacity-50"
-                  disabled={isLoading}
-                  type="button"
-                >
-                  {example}
-                </button>
-              ))}
+          {error && (
+            <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+              <p className="text-red-700">{error}</p>
+              <button 
+                onClick={() => setError('')}
+                className="mt-2 text-red-600 hover:text-red-800 text-sm underline"
+              >
+                エラーを閉じる
+              </button>
             </div>
-          </div>
+          )}
         </div>
 
-        {/* 検索結果表示 */}
-        {hasSearched && (
-          <div className="bg-white rounded-2xl shadow-lg p-8 mb-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">
-              検索結果 ({searchResults?.length || 0}件)
-            </h2>
-            
-            {!searchResults || searchResults.length === 0 ? (
-              <div className="text-center py-8">
-                <p className="text-gray-600">検索結果が見つかりませんでした。</p>
-                <p className="text-sm text-gray-500 mt-2">別のキーワードで検索してみてください。</p>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {searchResults.map((lab, index) => renderLabCard(lab, index))}
-              </div>
-            )}
-          </div>
-        )}
+        {/* 人気検索キーワード */}
+        <PopularSearches onSearchClick={handleExampleSearch} />
 
-        {/* 特徴説明 */}
-        <div className="grid md:grid-cols-3 gap-6">
-          <div className="bg-white rounded-xl p-6 shadow-md">
-            <div className="flex items-center mb-3">
-              <Users className="h-8 w-8 text-blue-600 mr-3" />
-              <h3 className="text-xl font-semibold">50+ 研究室</h3>
-            </div>
-            <p className="text-gray-600">全国の大学から厳選された研究室データベース</p>
+        {/* 機能説明 */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+          <div className="text-center p-6 bg-white rounded-lg shadow-sm">
+            <Search className="h-12 w-12 text-blue-600 mx-auto mb-4" />
+            <h3 className="text-lg font-semibold mb-2">AI検索</h3>
+            <p className="text-gray-600">最新のAI技術でキーワードから最適な研究室を発見</p>
           </div>
           
-          <div className="bg-white rounded-xl p-6 shadow-md">
-            <div className="flex items-center mb-3">
-              <Brain className="h-8 w-8 text-blue-600 mr-3" />
-              <h3 className="text-xl font-semibold">AI 推奨</h3>
-            </div>
-            <p className="text-gray-600">あなたの興味に最適な研究室をAIが発見</p>
+          <div className="text-center p-6 bg-white rounded-lg shadow-sm">
+            <Target className="h-12 w-12 text-green-600 mx-auto mb-4" />
+            <h3 className="text-lg font-semibold mb-2">詳細情報</h3>
+            <p className="text-gray-600">研究内容、教授情報、大学情報を詳しく表示</p>
           </div>
           
-          <div className="bg-white rounded-xl p-6 shadow-md">
-            <div className="flex items-center mb-3">
-              <Zap className="h-8 w-8 text-blue-600 mr-3" />
-              <h3 className="text-xl font-semibold">簡単検索</h3>
-            </div>
-            <p className="text-gray-600">自然な言葉で検索可能、専門用語不要</p>
+          <div className="text-center p-6 bg-white rounded-lg shadow-sm">
+            <BookOpen className="h-12 w-12 text-purple-600 mx-auto mb-4" />
+            <h3 className="text-lg font-semibold mb-2">関連研究</h3>
+            <p className="text-gray-600">類似した研究をしている他の研究室も表示</p>
           </div>
         </div>
 
         {/* フッター */}
-        <div className="text-center mt-12 text-gray-500">
-          <p>中学生の未来を拓く、AI駆動の研究室発見プラットフォーム</p>
+        <div className="text-center text-gray-500 text-sm">
+          <p>中学生向けAI駆動研究室検索システム</p>
+          <p className="mt-2">
+            💡 デバッグモード: コンソールで検索ログを確認できます
+          </p>
         </div>
       </div>
     </div>

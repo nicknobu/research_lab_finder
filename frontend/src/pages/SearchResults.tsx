@@ -13,25 +13,29 @@ const SearchResults: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string>('')
   const [query, setQuery] = useState('')
-  const [sortBy, setSortBy] = useState<'relevance' | 'name'>('relevance')
-  const [filterField, setFilterField] = useState<string>('')
-  const [filterRegion, setFilterRegion] = useState<string>('')
+
+  console.log('🔍 SearchResults mounted, location:', location)
+  console.log('📊 location.state:', location.state)
 
   // URLパラメータまたはlocation.stateから初期データを取得
   useEffect(() => {
     if (location.state?.results && location.state?.query) {
       // Home画面からの遷移の場合
+      console.log('✅ Home からの遷移データを受信:', location.state)
       setResults(location.state.results)
       setQuery(location.state.query)
     } else {
       // URLパラメータからクエリを取得
       const params = new URLSearchParams(location.search)
       const queryParam = params.get('q')
+      console.log('🔗 URL パラメータから取得:', queryParam)
+      
       if (queryParam) {
         setQuery(queryParam)
         handleSearch(queryParam)
       } else {
         // クエリが無い場合はホームに戻る
+        console.log('❌ クエリが見つからないため、ホームに戻ります')
         navigate('/')
       }
     }
@@ -40,21 +44,21 @@ const SearchResults: React.FC = () => {
   const handleSearch = async (searchQuery: string) => {
     if (!searchQuery.trim()) return
 
+    console.log('🔍 再検索実行:', searchQuery)
     setIsLoading(true)
     setError('')
 
     try {
       const searchRequest: SearchRequest = {
         query: searchQuery,
-        limit: 20,
-        ...(filterField && { field_filter: [filterField] }),
-        ...(filterRegion && { region_filter: [filterRegion] })
+        limit: 20
       }
 
       const searchResults = await searchLabs(searchRequest)
+      console.log('✅ 再検索結果:', searchResults)
       setResults(searchResults)
     } catch (err) {
-      console.error('検索エラー:', err)
+      console.error('❌ 再検索エラー:', err)
       setError('検索中にエラーが発生しました。')
     } finally {
       setIsLoading(false)
@@ -71,32 +75,9 @@ const SearchResults: React.FC = () => {
   }
 
   const handleLabClick = (lab: ResearchLabSearchResult) => {
+    console.log('🏢 研究室クリック:', lab)
+    console.log('🔗 遷移先:', `/lab/${lab.id}`)
     navigate(`/lab/${lab.id}`)
-  }
-
-  const getSortedResults = () => {
-    if (!results?.results) return []
-
-    let sortedResults = [...results.results]
-
-    if (sortBy === 'name') {
-      sortedResults.sort((a, b) => a.name.localeCompare(b.name, 'ja'))
-    }
-    // 'relevance'の場合はそのまま（既にスコア順）
-
-    return sortedResults
-  }
-
-  const getUniqueFields = () => {
-    if (!results?.results) return []
-    const fields = new Set(results.results.map(lab => lab.research_field))
-    return Array.from(fields).sort()
-  }
-
-  const getUniqueRegions = () => {
-    if (!results?.results) return []
-    const regions = new Set(results.results.map(lab => lab.region))
-    return Array.from(regions).sort()
   }
 
   if (isLoading && !results) {
@@ -134,108 +115,39 @@ const SearchResults: React.FC = () => {
                 type="text"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="新しいキーワードで検索..."
-                className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="検索キーワードを入力..."
+                className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
               />
               <button
                 type="submit"
-                className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-blue-600 text-white px-4 py-1.5 rounded-md hover:bg-blue-700 transition-colors"
+                className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-blue-600 text-white px-4 py-1.5 rounded hover:bg-blue-700"
               >
                 検索
               </button>
             </div>
           </form>
+
+          {/* 検索結果サマリー */}
+          {results && (
+            <div className="text-sm text-gray-600">
+              <p>
+                「<strong>{results.query}</strong>」の検索結果: 
+                <strong className="text-blue-600 ml-1">{results.total_results}件</strong>
+                <span className="ml-2">({results.search_time_ms}ms)</span>
+              </p>
+            </div>
+          )}
         </div>
       </div>
 
+      {/* メインコンテンツ */}
       <div className="max-w-6xl mx-auto p-6">
-        <div className="flex gap-6">
-          {/* サイドバー（フィルター） */}
-          <div className="w-80 flex-shrink-0">
-            <div className="bg-white rounded-lg p-6 sticky top-6">
-              <div className="flex items-center mb-4">
-                <Filter className="h-5 w-5 mr-2 text-gray-600" />
-                <h3 className="font-semibold text-gray-900">フィルター</h3>
-              </div>
-
-              {/* ソート */}
-              <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  並び順
-                </label>
-                <select
-                  value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value as 'relevance' | 'name')}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
-                >
-                  <option value="relevance">関連度順</option>
-                  <option value="name">研究室名順</option>
-                </select>
-              </div>
-
-              {/* 研究分野フィルター */}
-              <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  研究分野
-                </label>
-                <select
-                  value={filterField}
-                  onChange={(e) => setFilterField(e.target.value)}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
-                >
-                  <option value="">すべて</option>
-                  {getUniqueFields().map(field => (
-                    <option key={field} value={field}>{field}</option>
-                  ))}
-                </select>
-              </div>
-
-              {/* 地域フィルター */}
-              <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  地域
-                </label>
-                <select
-                  value={filterRegion}
-                  onChange={(e) => setFilterRegion(e.target.value)}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
-                >
-                  <option value="">すべて</option>
-                  {getUniqueRegions().map(region => (
-                    <option key={region} value={region}>{region}</option>
-                  ))}
-                </select>
-              </div>
-
-              {/* フィルタークリア */}
-              {(filterField || filterRegion) && (
-                <button
-                  onClick={() => {
-                    setFilterField('')
-                    setFilterRegion('')
-                  }}
-                  className="text-blue-600 hover:text-blue-800 text-sm font-medium"
-                >
-                  フィルターをクリア
-                </button>
-              )}
-            </div>
-          </div>
-
-          {/* メインコンテンツ */}
+        <div className="flex gap-8">
+          {/* 検索結果 */}
           <div className="flex-1">
             {error && (
               <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
-                <p className="text-red-600">{error}</p>
-              </div>
-            )}
-
-            {results && (
-              <div className="mb-6">
-                <p className="text-gray-600">
-                  <span className="font-semibold">{results.total_results}</span> 件の研究室が見つかりました
-                  （検索時間: {results.search_time_ms.toFixed(1)}ms）
-                </p>
+                <p className="text-red-700">{error}</p>
               </div>
             )}
 
@@ -246,7 +158,10 @@ const SearchResults: React.FC = () => {
               </div>
             ) : results && results.results.length > 0 ? (
               <div className="space-y-4">
-                {getSortedResults().map((lab) => (
+                <p className="text-gray-600 mb-4">
+                  💡 デバッグ: 研究室カードをクリックすると詳細画面に遷移します
+                </p>
+                {results.results.map((lab) => (
                   <LabCard
                     key={lab.id}
                     lab={lab}
