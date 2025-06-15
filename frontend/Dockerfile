@@ -1,50 +1,46 @@
 # frontend/Dockerfile
-FROM node:18-alpine
+FROM node:18.20.8-alpine3.20
+
+# セキュリティ更新とクリーンアップ
+RUN apk update && apk upgrade && \
+    apk add --no-cache \
+    curl \
+    dumb-init && \
+    rm -rf /var/cache/apk/*
+
+# 非root ユーザーの作成
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S nextjs -u 1001
 
 # 作業ディレクトリの設定
 WORKDIR /app
 
-# パッケージファイルをコピー
-COPY package*.json ./
+# package.jsonのみをコピー（package-lock.jsonは除外）
+COPY package.json ./
 
-# 依存関係のインストール
-RUN npm install --no-optional && npm cache clean --force
+# 所有権を変更
+RUN chown -R nextjs:nodejs /app
 
-# アプリケーションコードをコピー
-COPY . .
+# 非rootユーザーに切り替え
+USER nextjs
 
-# ポート番号の公開
-EXPOSE 3000
-
-# ヘルスチェック
-HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
-    CMD curl -f http://localhost:3000 || exit 1
-
-# 開発サーバーの起動
-CMD ["npm", "run", "dev"]
-FROM node:18-alpine
-
-# 作業ディレクトリの設定
-WORKDIR /app
-
-# パッケージファイルをコピー
-COPY package*.json ./
-
-# npm cache のクリーンアップとより確実な依存関係インストール
+# 依存関係の完全インストール（package-lock.jsonを再生成）
 RUN npm cache clean --force && \
-    rm -rf node_modules package-lock.json && \
-    npm install --no-optional && \
+    npm install && \
     npm cache clean --force
 
 # アプリケーションコードをコピー
-COPY . .
+COPY --chown=nextjs:nodejs . .
 
 # ポート番号の公開
 EXPOSE 3000
 
-# ヘルスチェック
+# ヘルスチェック（非root実行）
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
     CMD curl -f http://localhost:3000 || exit 1
+
+# dumb-initを使用してセキュアな起動
+ENTRYPOINT ["dumb-init", "--"]
 
 # 開発サーバーの起動
 CMD ["npm", "run", "dev"]

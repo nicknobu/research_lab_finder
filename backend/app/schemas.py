@@ -111,7 +111,7 @@ class SearchRequest(BaseModel):
     limit: int = Field(20, ge=1, le=100, description="結果件数（最大100件）")
     region_filter: Optional[List[str]] = Field(None, description="地域フィルター")
     field_filter: Optional[List[str]] = Field(None, description="研究分野フィルター")
-    min_similarity: float = Field(0.5, ge=0.0, le=1.0, description="最小類似度（0-1）")
+    min_similarity: float = Field(0.2, ge=0.0, le=1.0, description="最小類似度（0-1）")
     
     @validator('query')
     def validate_query(cls, v):

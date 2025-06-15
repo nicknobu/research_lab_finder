@@ -31,7 +31,7 @@ class Settings(BaseSettings):
     # 検索設定
     DEFAULT_SEARCH_LIMIT: int = 20
     MAX_SEARCH_LIMIT: int = 100
-    MIN_SIMILARITY_THRESHOLD: float = 0.5
+    MIN_SIMILARITY_THRESHOLD: float = 0.2
     
     # API設定
     API_V1_STR: str = "/api"
