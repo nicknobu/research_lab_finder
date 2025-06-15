@@ -62,7 +62,7 @@ WITH (m = 16, ef_construction = 64);
 
 -- フルテキスト検索用インデックス
 CREATE INDEX IF NOT EXISTS idx_research_labs_content_fts 
-ON research_labs USING gin(to_tsvector('japanese', research_content || ' ' || research_theme));
+ON research_labs USING gin(to_tsvector('english', research_content || ' ' || research_theme));
 
 CREATE INDEX IF NOT EXISTS idx_search_logs_timestamp ON search_logs(timestamp);
 CREATE INDEX IF NOT EXISTS idx_search_logs_query ON search_logs(query);
