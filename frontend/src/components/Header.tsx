@@ -1,9 +1,8 @@
 import React from "react"
-import { Link, useLocation } from "react-router-dom"
+import { Link } from "react-router-dom"
 import { Home, Search } from "lucide-react"
 
 const Header: React.FC = () => {
-  const location = useLocation()
 
   return (
     <header className="bg-white shadow-sm border-b">

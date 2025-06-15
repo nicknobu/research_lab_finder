@@ -6,29 +6,28 @@ interface PopularSearchesProps {
 }
 
 const PopularSearches: React.FC<PopularSearchesProps> = ({ onSearchClick }) => {
-  const searches = [
-    "がん治療の研究をしたい",
-    "アレルギーで苦しむ人を助けたい", 
-    "ワクチンで感染症を予防したい",
-    "新しい薬を開発したい",
-    "免疫学の研究",
+  const popularQueries = [
+    "機械学習 研究",
+    "がん治療 免疫療法", 
+    "AI 自然言語処理",
+    "再生医療 幹細胞",
+    "ロボット工学"
   ]
 
   return (
-    <div className="bg-white rounded-xl p-6 shadow-sm border">
-      <div className="flex items-center gap-2 mb-4">
-        <TrendingUp className="h-5 w-5 text-blue-600" />
-        <h3 className="text-lg font-semibold">人気の検索</h3>
-      </div>
-      
-      <div className="flex flex-wrap gap-2">
-        {searches.map((search, index) => (
+    <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
+      <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center">
+        <TrendingUp className="h-5 w-5 mr-2 text-blue-600" />
+        人気の検索キーワード
+      </h2>
+      <div className="flex flex-wrap gap-3">
+        {popularQueries.map((query) => (
           <button
-            key={index}
-            onClick={() => onSearchClick(search)}
-            className="bg-gray-100 hover:bg-blue-100 text-gray-700 px-3 py-2 rounded-full text-sm"
+            key={query}
+            onClick={() => onSearchClick(query)}
+            className="bg-gray-100 hover:bg-blue-100 text-gray-700 hover:text-blue-700 px-4 py-2 rounded-full text-sm font-medium transition-colors"
           >
-            {search}
+            {query}
           </button>
         ))}
       </div>

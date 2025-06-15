@@ -177,3 +177,7 @@ scraped_labs_*.json
 embeddings_*.npy
 search_index/
 cache/
+# Test files (temporarily disabled)
+**/__tests__/**
+**/*.test.*
+**/*.spec.*

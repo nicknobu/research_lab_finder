@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useLocation, useNavigate, Link } from 'react-router-dom'
-import { Search, ArrowLeft, Filter, SortAsc } from 'lucide-react'
+import { Search, ArrowLeft, Filter } from 'lucide-react'
 import LabCard from '../components/LabCard'
 import { searchLabs } from '../utils/api'
 import type { SearchResponse, ResearchLabSearchResult, SearchRequest } from '../types'

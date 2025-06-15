@@ -1,3 +1,4 @@
+from typing import Generator
 # backend/app/database.py
 from sqlalchemy import create_engine, text
 from sqlalchemy.ext.declarative import declarative_base
@@ -26,7 +27,7 @@ Base = declarative_base()
 
 
 # データベースセッション依存性
-def get_db() -> Session:
+def get_db() -> Generator[Session, None, None]:
     """データベースセッションを取得"""
     db = SessionLocal()
     try:

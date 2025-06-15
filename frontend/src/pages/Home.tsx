@@ -49,7 +49,6 @@ const Home: React.FC = () => {
   const [error, setError] = useState<string>('')
   const [searchResults, setSearchResults] = useState<any[]>([])
   const [hasSearched, setHasSearched] = useState(false)
-  const navigate = useNavigate()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()

@@ -1,5 +1,5 @@
 # frontend/Dockerfile
-FROM node:18.20.8-alpine3.20
+FROM node:20-alpine3.20
 
 # セキュリティ更新とクリーンアップ
 RUN apk update && apk upgrade && \

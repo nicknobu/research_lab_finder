@@ -38,7 +38,7 @@ const LabDetail: React.FC = () => {
       // 研究室詳細と類似研究室を並行取得
       const [labDetail, similar] = await Promise.all([
         getLabDetail(labId),
-        getSimilarLabs(labId, 5)
+        getSimilarLabs(labId)
       ])
 
       setLab(labDetail)
