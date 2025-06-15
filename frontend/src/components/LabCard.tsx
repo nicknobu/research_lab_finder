@@ -25,7 +25,6 @@ const LabCard: React.FC<LabCardProps> = ({ lab, onClick }) => {
   // 類似度スコアの正規化と安全な処理
   const getSafeScore = (score: number | undefined | null): number => {
     if (typeof score !== 'number' || isNaN(score)) {
-      console.log('⚠️ 無効なスコア:', score, '→ デフォルト値 0.5 を使用')
       return 0.5 // デフォルト値
     }
     // 0-1の範囲に正規化
@@ -50,16 +49,16 @@ const LabCard: React.FC<LabCardProps> = ({ lab, onClick }) => {
     return text.substring(0, maxLength) + '...'
   }
 
+  // 大学情報の安全な取得（修正版）
+  const safeUniversityName = lab.university_name || '大学名未取得'
+  const safePrefecture = lab.prefecture || '地域未取得'
+  const safeProfessorName = lab.professor_name || '教授名未取得'
+
   return (
     <div 
       className="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-lg transition-all duration-200 cursor-pointer hover:border-blue-300 hover:bg-blue-50"
       onClick={handleClick}
     >
-      {/* デバッグ情報 */}
-      <div className="mb-2 text-xs text-gray-400 border-b border-gray-100 pb-2">
-        🔍 デバッグ: ID={lab.id} | スコア={lab.similarity_score}→{scorePercentage}% | クリックで詳細画面へ
-      </div>
-
       {/* ヘッダー部分 */}
       <div className="flex justify-between items-start mb-4">
         <div className="flex-1">
@@ -68,15 +67,15 @@ const LabCard: React.FC<LabCardProps> = ({ lab, onClick }) => {
           </h3>
           <div className="flex items-center text-gray-600 mb-1">
             <User className="h-4 w-4 mr-2" />
-            <span className="font-medium">{lab.professor_name || '教授名未設定'}</span>
+            <span className="font-medium">{safeProfessorName}</span>
           </div>
           <div className="flex items-center text-gray-600">
             <MapPin className="h-4 w-4 mr-2" />
-            <span>{lab.university_name || '大学名未設定'} • {lab.prefecture || '地域未設定'}</span>
+            <span>{safeUniversityName} • {safePrefecture}</span>
           </div>
         </div>
         
-        {/* マッチ度スコア - 修正版 */}
+        {/* マッチ度スコア */}
         <div className={`px-3 py-1 rounded-full text-sm font-medium ${getMatchColor(scorePercentage)}`}>
           <div className="flex items-center">
             <Star className="h-3 w-3 mr-1" />
