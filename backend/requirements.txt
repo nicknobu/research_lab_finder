@@ -1,0 +1,42 @@
+# backend/requirements.txt
+
+# Web Framework
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+
+# Database
+sqlalchemy==2.0.23
+psycopg2-binary==2.9.9
+pgvector==0.2.4
+
+# Configuration & Validation
+pydantic==2.5.0
+pydantic-settings==2.1.0
+
+# AI & Machine Learning
+openai==0.28.1
+numpy==1.25.2
+
+# Data Processing
+pandas==2.1.4
+
+# HTTP & Async
+aiohttp==3.9.1
+httpx==0.25.2
+
+# Utilities
+python-dotenv==1.0.0
+python-multipart==0.0.6
+
+# Development & Testing
+pytest==7.4.3
+pytest-asyncio==0.21.1
+black==23.11.0
+isort==5.12.0
+flake8==6.1.0
+
+# Logging & Monitoring
+structlog==23.2.0
+
+# CORS
+python-jose[cryptography]==3.3.0
