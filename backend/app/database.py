@@ -70,6 +70,7 @@ async def check_and_load_initial_data():
             
             if university_count == 0 or lab_count == 0:
                 logger.info("Loading initial data...")
+                # 修正：正しい引数でload_initial_dataを呼び出し
                 await load_initial_data(db)
                 logger.info("✅ Initial data loaded successfully")
             else:
