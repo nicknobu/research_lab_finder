@@ -181,3 +181,15 @@ cache/
 **/__tests__/**
 **/*.test.*
 **/*.spec.*
+
+# スクレイピング関連
+scraper/logs/
+scraper/cache/
+scraped_data/
+*.scraped
+
+# 統合プロジェクト
+requirements/*.lock
+.coverage
+htmlcov/
+.python-version

@@ -1,0 +1,171 @@
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+name = "research-lab-scraper"
+version = "0.1.0"
+description = "日本の大学から免疫関連研究室データを効率的に収集するスクレイピングシステム"
+authors = ["Research Team <research@example.com>"]
+readme = "README.md"
+packages = [{include = "research_lab_scraper"}]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+# Core dependencies
+pydantic = "^2.5"              # 型安全な設定・データ管理
+sqlalchemy = "^2.0"           # ORM
+alembic = "^1.13"             # データベースマイグレーション
+
+# 非同期・HTTP
+aiohttp = "^3.9"              # 非同期HTTP
+asyncio-throttle = "^1.0.2"   # レート制限
+httpx = "^0.25"               # 代替HTTP クライアント
+
+# 解析・設定
+beautifulsoup4 = "^4.12"      # HTML解析
+lxml = "^4.9"                 # XMLパーサー（高速）
+pyyaml = "^6.0"               # YAML設定ファイル
+structlog = "^23.2"           # 構造化ログ
+
+# データ処理
+pandas = "^2.1"               # データ分析
+numpy = "^1.24"               # 数値計算
+
+# 依存性注入・設計パターン
+dependency-injector = "^4.41" # DIコンテナ
+
+# ユーティリティ
+click = "^8.1"                # CLI
+rich = "^13.7"                # リッチコンソール出力
+tenacity = "^8.2"             # 再試行機構
+
+[tool.poetry.group.dev.dependencies]
+# テストフレームワーク
+pytest = "^7.4"               # テストフレームワーク
+pytest-asyncio = "^0.21"      # 非同期テスト
+pytest-cov = "^4.1"           # カバレッジ測定
+pytest-mock = "^3.12"         # モック
+hypothesis = "^6.88"          # プロパティベーステスト
+
+# 品質管理
+mypy = "^1.7"                 # 型チェック
+black = "^23.11"              # コードフォーマッター
+isort = "^5.12"               # import ソート
+flake8 = "^6.1"               # コード品質チェック
+bandit = "^1.7"               # セキュリティチェック
+
+# 開発ツール
+pre-commit = "^3.5"           # Git フック管理
+ipython = "^8.17"             # 対話型 Python
+jupyter = "^1.0"              # ノートブック
+
+# ドキュメント
+sphinx = "^7.2"               # ドキュメント生成
+sphinx-rtd-theme = "^1.3"     # テーマ
+
+[tool.poetry.scripts]
+scraper = "research_lab_scraper.cli:main"
+
+[tool.black]
+line-length = 88
+target-version = ['py311']
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+  # 自動生成ファイル
+  \.eggs
+  | \.git
+  | \.mypy_cache
+  | \.pytest_cache
+  | \.venv
+  | _build
+  | build
+  | dist
+  | migrations
+)/
+'''
+
+[tool.isort]
+profile = "black"
+multi_line_output = 3
+line_length = 88
+known_first_party = ["research_lab_scraper"]
+known_third_party = ["pydantic", "sqlalchemy", "aiohttp", "beautifulsoup4"]
+
+[tool.mypy]
+python_version = "3.11"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+disallow_untyped_decorators = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true
+warn_unreachable = true
+strict_equality = true
+show_error_codes = true
+
+# モジュール別設定
+[[tool.mypy.overrides]]
+module = [
+    "beautifulsoup4.*",
+    "dependency_injector.*",
+    "asyncio_throttle.*",
+]
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+minversion = "7.0"
+addopts = "-ra -q --strict-markers --strict-config"
+testpaths = ["tests"]
+pythonpath = [".", "research_lab_scraper"]
+asyncio_mode = "auto"
+markers = [
+    "unit: 単体テスト",
+    "integration: 統合テスト", 
+    "e2e: エンドツーエンドテスト",
+    "slow: 実行時間が長いテスト",
+    "network: ネットワークアクセスが必要なテスト",
+]
+
+[tool.coverage.run]
+source = ["research_lab_scraper"]
+omit = [
+    "*/tests/*",
+    "*/migrations/*",
+    "*/__init__.py",
+    "*/conftest.py",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:",
+]
+
+[tool.bandit]
+exclude_dirs = ["tests", "migrations"]
+skips = ["B101", "B601"]  # assert使用、shell=True許可（テスト用）
+
+[tool.flake8]
+max-line-length = 88
+extend-ignore = ["E203", "W503", "E501"]  # black との互換性
+exclude = [
+    ".git",
+    "__pycache__",
+    ".pytest_cache",
+    ".mypy_cache",
+    "migrations",
+]
+per-file-ignores = [
+    "__init__.py:F401",  # 未使用import許可
+    "settings.py:E501",  # 長い行許可（URL等）
+]

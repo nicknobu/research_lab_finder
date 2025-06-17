@@ -1,0 +1,12 @@
+-r base.txt
+
+# HTTP & Web Scraping
+aiohttp>=3.8,<4.0
+asyncio-throttle>=1.0.2,<2.0
+tenacity>=8.0,<9.0
+beautifulsoup4>=4.11,<5.0
+lxml>=4.6,<5.0
+dependency-injector>=4.40,<5.0
+typer>=0.7,<1.0
+nltk>=3.7,<4.0
+fuzzywuzzy>=0.18,<1.0
